@@ -1,0 +1,26 @@
+{
+  "android-device-1": {
+    "platformName": "android",
+    "platformVersion": "16",
+    "deviceName": "",
+    "udid": ""
+  },
+  "android-device-2": {
+    "platformName": "android",
+    "platformVersion": "",
+    "deviceName": "",
+    "udid": ""
+  },
+  "ios-device-1": {
+    "platformName": "ios",
+    "platformVersion": "18.6",
+    "deviceName": "iPhoneAsfaq",
+    "udid": "00008120-001630623682601E"
+  },
+  "ios-device-2": {
+    "platformName": "ios",
+    "platformVersion": "",
+    "deviceName": "",
+    "udid": ""
+  }
+}

@@ -1,0 +1,12 @@
+node_modules/
+dist/
+*.js
+*.d.ts
+*.js.map
+!wdio.conf.ts
+apps/android/*.apk
+apps/ios/*.ipa
+allure-results/
+allure-report/
+.DS_Store
+.env

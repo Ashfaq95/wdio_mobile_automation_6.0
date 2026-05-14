@@ -1,0 +1,6 @@
+{
+  "login": "/auth/login",
+  "refreshToken": "/auth/refresh",
+  "validateToken": "/auth/validate",
+  "users": "/users"
+}
