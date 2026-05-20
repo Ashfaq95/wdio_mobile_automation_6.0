@@ -9,4 +9,3 @@ apps/ios/*.ipa
 allure-results/
 allure-report/
 .DS_Store
-.env
