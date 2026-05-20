@@ -1,6 +1,6 @@
 import { getAndroidAppPath, getIosAppPath } from "../src/utils/app.helper";
-import devices from "./devices.json";
-import { specs, suites } from "./specsAndSuites";
+import devices from "../devices.json";
+import { specs, suites } from "./specs-and-suites";
 
 type DeviceConfig = {
   platformName: string;
@@ -112,5 +112,25 @@ export const config: WebdriverIO.Config = {
   mochaOpts: {
     ui: "bdd",
     timeout: 180000,
+  },
+
+  afterTest: async function (_test, _context, { passed }) {
+    if (!passed) {
+      const screenshot = await driver.takeScreenshot();
+      await browser.saveScreenshot(
+        `allure-results/screenshot-${Date.now()}.png`,
+      );
+      // Attach screenshot to Allure report if reporter supports it
+      try {
+        // @ts-ignore — allure global injected by allure-commandline reporter
+        allure.addAttachment(
+          "Failure Screenshot",
+          Buffer.from(screenshot, "base64"),
+          "image/png",
+        );
+      } catch {
+        // Reporter not available — screenshot saved to allure-results/
+      }
+    }
   },
 };

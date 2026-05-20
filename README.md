@@ -9,37 +9,44 @@ Native mobile test automation for **Android** and **iOS** physical devices using
 ```
 mobile-automation/
 ├── apps/
-│   ├── android/               # Place your .apk file here
-│   └── ios/                   # Place your .ipa file here
+│   ├── android/                        # Place your .apk file here
+│   └── ios/                            # Place your .ipa file here
 ├── config/
-│   ├── devices.json           # Device registry
-│   ├── specsAndSuites.ts      # Spec paths and named suites
-│   └── wdio.conf.ts           # WebdriverIO configuration
+│   ├── hooks/
+│   │   └── hooks.ts                    # Single consolidated hooks file
+│   ├── specsAndSuites.ts               # Spec paths and named suites
+│   └── wdio.conf.ts                    # WebdriverIO configuration
 ├── src/
 │   ├── api/
-│   │   ├── login/             # Login API methods
-│   │   └── user/              # User API methods
+│   │   ├── login/
+│   │   │   ├── login.api.ts            # Login raw HTTP calls (Axios)
+│   │   │   └── loginMethods.api.ts     # Login business logic + DTOs
+│   │   └── user/
+│   │       ├── user.api.ts             # User raw HTTP calls (Axios)
+│   │       └── userMethods.api.ts      # User business logic + DTOs
 │   ├── deeplinks/
-│   │   └── deeplinks.ts       # All app deeplinks in one place
-│   ├── hooks/
-│   │   ├── base.hooks.ts      # Shared before/after lifecycle
-│   │   ├── login.hooks.ts
-│   │   └── home.hooks.ts
-│   ├── pages/
-│   │   └── base.page.ts       # Base class with shared actions
+│   │   └── deeplinks.ts               # All app deeplinks in one place
+│   ├── pageObjects/
+│   │   ├── locators/
+│   │   │   ├── login.locators.ts       # Login element selectors (platform-aware)
+│   │   │   └── home.locators.ts        # Home element selectors (platform-aware)
+│   │   └── actions/
+│   │       ├── base.page.ts            # Base class with shared UI actions
+│   │       ├── login.page.ts           # Login page actions
+│   │       └── home.page.ts            # Home page actions
 │   └── utils/
-│       ├── app.helper.ts      # APK / IPA path resolver
-│       └── api.helper.ts      # HTTP helper (axios)
+│       └── app.helper.ts              # App path resolver + API utilities
 ├── test/
-│   ├── login/
-│   │   ├── login.locators.ts
-│   │   ├── login.page.ts
-│   │   └── login.spec.ts
-│   └── home/
-│       ├── home.locators.ts
-│       ├── home.page.ts
-│       └── home.spec.ts
-└── .env
+│   ├── e2e/
+│   │   ├── login/
+│   │   │   └── login.spec.ts           # Login test cases
+│   │   └── home/
+│   │       └── home.spec.ts            # Home test cases
+│   ├── api/                            # API-only test specs (coming soon)
+│   └── integration/                    # Integration test specs (coming soon)
+├── devices.json                        # Device registry
+├── package.json
+└── tsconfig.json
 ```
 
 ---
@@ -48,12 +55,23 @@ mobile-automation/
 
 | Layer | Folder | Responsibility |
 |---|---|---|
-| Locators | `test/<page>/` | Element selectors — platform-aware internally |
-| Page objects | `test/<page>/` | User actions — extend `BasePage` |
-| Hooks | `src/hooks/` | Setup & teardown per page/suite |
-| Deeplinks | `src/deeplinks/` | Fast direct navigation to any screen |
+| Locators | `src/pageObjects/locators/` | Platform-aware element selectors |
+| Page actions | `src/pageObjects/actions/` | User-facing actions — extend `BasePage` |
+| Hooks | `config/hooks/hooks.ts` | Shared lifecycle + utility actions (login, scroll) |
+| Deeplinks | `src/deeplinks/deeplinks.ts` | Fast direct navigation to any screen |
 | API clients | `src/api/` | Backend validation alongside UI tests |
-| Specs | `test/<page>/` | Test cases — every `it` block runs independently |
+| Specs | `test/e2e/` | Test cases — every `it` block runs independently |
+
+---
+
+## Naming Conventions
+
+| Target | Convention | Example |
+|---|---|---|
+| Files | kebab-case | `login.locators.ts`, `home.page.ts` |
+| Classes | PascalCase | `LoginPage`, `HomeLocators` |
+| Methods | camelCase — `<action><Element><Type>` | `tapLoginButton`, `enterUsernameInput` |
+| Locators | camelCase — `<element><Type>` | `loginButton`, `usernameInput`, `errorMessage` |
 
 ---
 
@@ -76,7 +94,7 @@ npx appium driver install uiautomator2   # Android
 npx appium driver install xcuitest       # iOS
 ```
 
-**2. Register your devices in `config/devices.json`**
+**2. Register your devices in `devices.json` (project root)**
 
 ```json
 {
@@ -122,15 +140,15 @@ The framework auto-picks the latest file in each folder.
 
 - Use `DEVICE=<key>` for a single device
 - Use `DEVICES=<key1>,<key2>` to run on multiple devices in parallel
-- Device keys come from `config/devices.json`
+- Device keys come from `devices.json` in the project root
 
 ---
 
 ### 1. Run a specific spec file — single device
 
 ```bash
-DEVICE=android-device-1 npm run test:spec -- test/login/login.spec.ts
-DEVICE=ios-device-1     npm run test:spec -- test/home/home.spec.ts
+DEVICE=android-device-1 npm run test:spec -- test/e2e/login/login.spec.ts
+DEVICE=ios-device-1     npm run test:spec -- test/e2e/home/home.spec.ts
 ```
 
 ---
@@ -138,7 +156,7 @@ DEVICE=ios-device-1     npm run test:spec -- test/home/home.spec.ts
 ### 2. Run a specific spec file — multiple devices
 
 ```bash
-DEVICES=android-device-1,ios-device-1 npm run test:spec -- test/login/login.spec.ts
+DEVICES=android-device-1,ios-device-1 npm run test:spec -- test/e2e/login/login.spec.ts
 ```
 
 ---
@@ -167,14 +185,14 @@ DEVICES=android-device-1,ios-device-1 npm run test:suite -- smoke
 Pass the exact test title (or any unique substring) after `test:grep`, then the spec file after `--spec`.
 
 ```bash
-DEVICE=android-device-1 npm run test:grep -- "should login with valid credentials" --spec test/login/login.spec.ts
-DEVICE=ios-device-1     npm run test:grep -- "should display the home screen after login" --spec test/home/home.spec.ts
+DEVICE=android-device-1 npm run test:grep -- "should login with valid credentials" --spec test/e2e/login/login.spec.ts
+DEVICE=ios-device-1     npm run test:grep -- "should land on the home screen" --spec test/e2e/home/home.spec.ts
 ```
 
 You can also use a tag instead of a title to match a group of tests within a spec:
 
 ```bash
-DEVICE=android-device-1 npm run test:grep -- "@smoke" --spec test/login/login.spec.ts
+DEVICE=android-device-1 npm run test:grep -- "@smoke" --spec test/e2e/login/login.spec.ts
 ```
 
 > Tags are embedded in `describe` and `it` titles using `@tagname`. Available tags:
@@ -189,11 +207,11 @@ DEVICE=android-device-1 npm run test:grep -- "@smoke" --spec test/login/login.sp
 
 ---
 
-### 6. Run a specific `it` block from a spec file — multiple devices
+### 6. Run a specific `it` block — multiple devices
 
 ```bash
-DEVICES=android-device-1,ios-device-1 npm run test:grep -- "should login with valid credentials" --spec test/login/login.spec.ts
-DEVICES=android-device-1,ios-device-1 npm run test:grep -- "@smoke" --spec test/home/home.spec.ts
+DEVICES=android-device-1,ios-device-1 npm run test:grep -- "should login with valid credentials" --spec test/e2e/login/login.spec.ts
+DEVICES=android-device-1,ios-device-1 npm run test:grep -- "@smoke" --spec test/e2e/home/home.spec.ts
 ```
 
 ---
@@ -207,22 +225,50 @@ npm run test:ios       # All tests on ios-device-1
 
 ---
 
+## Hooks
+
+`config/hooks/hooks.ts` is the single hooks file used by all specs. Register it at the top of any `describe` block:
+
+```typescript
+import { Hooks } from "../../../config/hooks/hooks";
+
+describe("My Tests", () => {
+  Hooks.register();           // wires before / beforeEach / afterEach / after
+  
+  beforeEach(async () => {
+    await Hooks.login();      // optional — only for suites that need auth
+  });
+});
+```
+
+**Available utility methods on `Hooks`:**
+
+| Method | Description |
+|---|---|
+| `Hooks.login(username?, password?)` | Navigate to login screen and sign in |
+| `Hooks.scrollVertical("down" \| "up")` | Scroll vertically (default: down) |
+| `Hooks.scrollHorizontal("left" \| "right")` | Scroll horizontally (default: left) |
+
+Screenshots on test failure are captured automatically by the `afterTest` hook in `wdio.conf.ts` and attached to the Allure report.
+
+---
+
 ## Deeplinks
 
 Deeplinks let you jump directly to any screen without navigating through the UI. All links live in `src/deeplinks/deeplinks.ts` — update the scheme to match your app.
 
 ```typescript
 export const Deeplinks = {
-  login:          "myapp://login",
-  home:           "myapp://home",
-  profile:        "myapp://profile",
-  settings:       "myapp://settings",
-  notifications:  "myapp://notifications",
-  forgotPassword: "myapp://forgot-password",
+  login:         "myapp://login",
+  home:          "myapp://home",
+  profile:       "myapp://profile",
+  settings:      "myapp://settings",
+  notifications: "myapp://notifications",
+  forgotPassword:"myapp://forgot-password",
 } as const;
 ```
 
-Use in any spec or hook:
+Use in any spec or page:
 
 ```typescript
 await page.navigateViaDeeplink(Deeplinks.settings);
@@ -234,13 +280,21 @@ await page.navigateViaDeeplink(Deeplinks.settings);
 
 ## Adding a New Page
 
-1. Create `test/<page>/` with three files:
-   - `<page>.locators.ts` — element selectors
-   - `<page>.page.ts` — actions (extend `BasePage`)
-   - `<page>.spec.ts` — tests (tag each `it` with `@smoke`, `@regression`, or `@api`)
-2. Create `src/hooks/<page>.hooks.ts` (extend `BaseHooks`)
-3. Add the spec to a suite in `config/specsAndSuites.ts`
-4. Add any new screen deeplinks to `src/deeplinks/deeplinks.ts`
+1. **Locators** — create `src/pageObjects/locators/<page>.locators.ts`
+   - Export a platform-resolved locators instance
+   - Name locators as `<element><Type>` (e.g. `submitButton`, `emailInput`)
+
+2. **Actions** — create `src/pageObjects/actions/<page>.page.ts`
+   - Extend `BasePage`
+   - Name methods as `<action><Element><Type>` (e.g. `tapSubmitButton`, `enterEmailInput`)
+
+3. **Spec** — create `test/e2e/<page>/<page>.spec.ts`
+   - Call `Hooks.register()` at the top of `describe`
+   - Tag each `it` with `@smoke`, `@regression`, or `@api`
+
+4. **Suite** — add the spec path to `config/specsAndSuites.ts`
+
+5. **Deeplinks** — add any new screen links to `src/deeplinks/deeplinks.ts`
 
 ---
 

@@ -1,4 +1,4 @@
-import type { Deeplink } from "../deeplinks/deeplinks";
+import type { Deeplink } from "../../deeplinks/deeplinks";
 
 /**
  * BasePage — common reusable actions for all page objects.

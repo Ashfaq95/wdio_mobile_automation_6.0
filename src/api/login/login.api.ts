@@ -1,12 +1,15 @@
 import axios from "axios";
-import endpoints from "../endpoints.json";
-import { getApiServiceUrl, getUserAgent } from "../../utils/api.helper";
+import { getApiServiceUrl, getUserAgent } from "../../utils/app.helper";
+
+const API_BASE_URL = getApiServiceUrl();
+const LOGIN_URL = API_BASE_URL + "/auth/login";
+const REFRESH_TOKEN_URL = API_BASE_URL + "/auth/refresh";
+const VALIDATE_TOKEN_URL = API_BASE_URL + "/auth/validate";
 
 class LoginApi {
   async getLoginResponse(username: string, password: string) {
-    const url = getApiServiceUrl() + endpoints.login;
     const response = await axios.post(
-      url,
+      LOGIN_URL,
       { username, password },
       {
         headers: {
@@ -19,9 +22,8 @@ class LoginApi {
   }
 
   async getRefreshTokenResponse(token: string) {
-    const url = getApiServiceUrl() + endpoints.refreshToken;
     const response = await axios.post(
-      url,
+      REFRESH_TOKEN_URL,
       { token },
       {
         headers: {
@@ -35,8 +37,7 @@ class LoginApi {
   }
 
   async getValidateTokenResponse(token: string) {
-    const url = getApiServiceUrl() + endpoints.validateToken;
-    const response = await axios.get(url, {
+    const response = await axios.get(VALIDATE_TOKEN_URL, {
       headers: {
         Accept: "application/json",
         "User-Agent": getUserAgent(),

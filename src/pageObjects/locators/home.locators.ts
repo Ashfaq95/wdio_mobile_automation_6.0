@@ -1,4 +1,4 @@
-import { getCurrentPlatform } from "../../../src/utils/app.helper";
+import { getCurrentPlatform } from "../../utils/app.helper";
 
 class HomeObjects {
   get welcomeText() {

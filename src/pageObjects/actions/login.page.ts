@@ -1,26 +1,26 @@
-import { BasePage } from "../../src/pages/base.page";
-import { loginLocators } from "./login.locators";
+import { BasePage } from "./base.page";
+import { loginLocators } from "../locators/login.locators";
 
 export class LoginPage extends BasePage {
   private locators = loginLocators;
 
-  async enterUsername(username: string): Promise<void> {
+  async enterUsernameInput(username: string): Promise<void> {
     await this.type(await this.locators.usernameInput, username);
   }
 
-  async enterPassword(password: string): Promise<void> {
+  async enterPasswordInput(password: string): Promise<void> {
     await this.type(await this.locators.passwordInput, password);
   }
 
-  async tapLoginButton(): Promise<void> {
+  async clickLoginButton(): Promise<void> {
     await this.hideKeyboard();
     await this.tap(await this.locators.loginButton);
   }
 
   async login(username: string, password: string): Promise<void> {
-    await this.enterUsername(username);
-    await this.enterPassword(password);
-    await this.tapLoginButton();
+    await this.enterUsernameInput(username);
+    await this.enterPasswordInput(password);
+    await this.clickLoginButton();
   }
 
   async getErrorMessage(): Promise<string> {
@@ -31,7 +31,7 @@ export class LoginPage extends BasePage {
     return this.isDisplayed(await this.locators.errorMessage);
   }
 
-  async tapForgotPassword(): Promise<void> {
+  async clickForgotPasswordLink(): Promise<void> {
     await this.tap(await this.locators.forgotPasswordLink);
   }
 

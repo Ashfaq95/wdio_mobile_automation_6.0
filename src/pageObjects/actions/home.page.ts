@@ -1,5 +1,5 @@
-import { BasePage } from "../../src/pages/base.page";
-import { homeLocators } from "./home.locators";
+import { BasePage } from "./base.page";
+import { homeLocators } from "../locators/home.locators";
 
 export class HomePage extends BasePage {
   private locators = homeLocators;
@@ -12,28 +12,28 @@ export class HomePage extends BasePage {
     return this.isDisplayed(await this.locators.welcomeText);
   }
 
-  async tapProfileIcon(): Promise<void> {
+  async clickProfileIcon(): Promise<void> {
     await this.tap(await this.locators.profileIcon);
   }
 
-  async tapSettings(): Promise<void> {
+  async clickSettingsButton(): Promise<void> {
     await this.tap(await this.locators.settingsButton);
   }
 
-  async tapLogout(): Promise<void> {
+  async clickLogoutButton(): Promise<void> {
     await this.tap(await this.locators.logoutButton);
   }
 
-  async tapNotificationBell(): Promise<void> {
+  async clickNotificationBell(): Promise<void> {
     await this.tap(await this.locators.notificationBell);
   }
 
-  async tapSearchBar(): Promise<void> {
+  async clickSearchBar(): Promise<void> {
     await this.tap(await this.locators.searchBar);
   }
 
   async searchFor(query: string): Promise<void> {
-    await this.tapSearchBar();
+    await this.clickSearchBar();
     await this.type(await this.locators.searchBar, query);
     await this.hideKeyboard();
   }

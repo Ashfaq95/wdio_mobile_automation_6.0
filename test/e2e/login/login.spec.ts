@@ -1,13 +1,13 @@
-import { LoginPage } from "./login.page";
-import { LoginHooks } from "../../src/hooks/login.hooks";
-import { LoginMethods } from "../../src/api/login/loginMethods.api";
-import { Deeplinks } from "../../src/deeplinks/deeplinks";
+import { LoginPage } from "../../../src/pageObjects/actions/login.page";
+import { Hooks } from "../../../config/hooks/hooks";
+import { LoginMethods } from "../../../src/api/login/login-methods.api";
+import { Deeplinks } from "../../../src/deeplinks/deeplinks";
 
 const loginPage = new LoginPage();
 const loginApi = new LoginMethods();
 
 describe("Login Page Tests @login", () => {
-  LoginHooks.register();
+  Hooks.register();
 
   // ──────────────────────────────────────────────
   // Each it block is independent and self-contained
@@ -33,21 +33,21 @@ describe("Login Page Tests @login", () => {
   });
 
   it("should show error for empty username @regression", async () => {
-    await loginPage.enterPassword("somepass");
-    await loginPage.tapLoginButton();
+    await loginPage.enterPasswordInput("somepass");
+    await loginPage.clickLoginButton();
     const isError = await loginPage.isErrorMessageDisplayed();
     expect(isError).toBe(true);
   });
 
   it("should show error for empty password @regression", async () => {
-    await loginPage.enterUsername("someuser");
-    await loginPage.tapLoginButton();
+    await loginPage.enterUsernameInput("someuser");
+    await loginPage.clickLoginButton();
     const isError = await loginPage.isErrorMessageDisplayed();
     expect(isError).toBe(true);
   });
 
   it("should navigate to forgot password @regression", async () => {
-    await loginPage.tapForgotPassword();
+    await loginPage.clickForgotPasswordLink();
     // Verify navigation happened — extend as needed
   });
 

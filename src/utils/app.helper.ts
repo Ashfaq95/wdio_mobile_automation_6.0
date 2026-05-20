@@ -1,12 +1,14 @@
 import * as fs from "fs";
 import * as path from "path";
-import devices from "../../config/devices.json";
+import devices from "../../devices.json";
 
-function resolvePlatform(): string {
+// ─────────────────────────────────────────────────────────
+// Platform / device resolution
+// ─────────────────────────────────────────────────────────
+
+export function resolvePlatform(): string {
   const deviceKey = process.env.DEVICE || "";
-  const device = (devices as Record<string, { platformName: string }>)[
-    deviceKey
-  ];
+  const device = (devices as Record<string, { platformName: string }>)[deviceKey];
   return device ? device.platformName.toLowerCase() : "android";
 }
 
@@ -25,7 +27,6 @@ export function getAndroidAppPath(): string {
     );
   }
 
-  // Return the most recently modified APK
   const sorted = apkFiles
     .map((f) => ({
       name: f,
@@ -70,4 +71,31 @@ export function isIos(): boolean {
 
 export function getCurrentPlatform(): string {
   return resolvePlatform();
+}
+
+// ─────────────────────────────────────────────────────────
+// API utilities (formerly api.helper.ts)
+// ─────────────────────────────────────────────────────────
+
+export function getApiServiceUrl(): string {
+  return process.env.API_BASE_URL || "https://api.example.com";
+}
+
+export function getUserAgent(): string {
+  return process.env.USER_AGENT || "MobileAutomation/1.0";
+}
+
+export function getDefaultHeaders(): Record<string, string> {
+  const headers: Record<string, string> = {
+    Accept: "application/json",
+    "Content-Type": "application/json",
+    "User-Agent": getUserAgent(),
+  };
+
+  const token = process.env.ACCESS_TOKEN;
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  return headers;
 }

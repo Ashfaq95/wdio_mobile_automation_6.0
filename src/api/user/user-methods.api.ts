@@ -1,7 +1,9 @@
 import axios from "axios";
-import endpoints from "../endpoints.json";
-import { getApiServiceUrl, getUserAgent } from "../../utils/api.helper";
+import { getApiServiceUrl, getUserAgent } from "../../utils/app.helper";
 import userApi from "./user.api";
+
+const API_BASE_URL = getApiServiceUrl();
+const USERS_URL = API_BASE_URL + "/users";
 
 export class UserResponse {
   userId: string = "";
@@ -39,47 +41,33 @@ class UserMethodsApi {
     return UserResponse.fromJson(data);
   }
 
-  async updateUserProfileResponse(
-    userId: string,
-    data: Record<string, unknown>,
-  ) {
-    const url = getApiServiceUrl() + `${endpoints.users}/${userId}`;
-    const response = await axios.put(url, data, {
-      headers: {
-        Accept: "application/json",
-        "User-Agent": getUserAgent(),
-        Authorization: `Bearer ${this.accessToken}`,
-      },
-    });
-    return response.data;
-  }
-
-  async deleteUserResponse(userId: string) {
-    const url = getApiServiceUrl() + `${endpoints.users}/${userId}`;
-    const response = await axios.delete(url, {
-      headers: {
-        Accept: "application/json",
-        "User-Agent": getUserAgent(),
-        Authorization: `Bearer ${this.accessToken}`,
-      },
-    });
-    return response;
-  }
-
   async updateUserProfile(
     userId: string,
     data: Partial<UserResponse>,
   ): Promise<UserResponse> {
-    const raw = await this.updateUserProfileResponse(
-      userId,
+    const response = await axios.put(
+      `${USERS_URL}/${userId}`,
       data as Record<string, unknown>,
+      {
+        headers: {
+          Accept: "application/json",
+          "User-Agent": getUserAgent(),
+          Authorization: `Bearer ${this.accessToken}`,
+        },
+      },
     );
-    return UserResponse.fromJson(raw);
+    return UserResponse.fromJson(response.data);
   }
 
   async deleteUser(userId: string): Promise<boolean> {
     try {
-      const response = await this.deleteUserResponse(userId);
+      const response = await axios.delete(`${USERS_URL}/${userId}`, {
+        headers: {
+          Accept: "application/json",
+          "User-Agent": getUserAgent(),
+          Authorization: `Bearer ${this.accessToken}`,
+        },
+      });
       return response.status === 200;
     } catch {
       return false;

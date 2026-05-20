@@ -1,6 +1,8 @@
 import axios from "axios";
-import endpoints from "../endpoints.json";
-import { getApiServiceUrl, getUserAgent } from "../../utils/api.helper";
+import { getApiServiceUrl, getUserAgent } from "../../utils/app.helper";
+
+const API_BASE_URL = getApiServiceUrl();
+const USERS_URL = API_BASE_URL + "/users";
 
 class UserApi {
   private get accessToken(): string {
@@ -8,8 +10,7 @@ class UserApi {
   }
 
   async getUserProfileResponse(userId: string) {
-    const url = getApiServiceUrl() + `${endpoints.users}/${userId}`;
-    const response = await axios.get(url, {
+    const response = await axios.get(`${USERS_URL}/${userId}`, {
       headers: {
         Accept: "application/json",
         "User-Agent": getUserAgent(),
